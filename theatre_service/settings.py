@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "theatre",
     "rest_framework",
+    "debug_toolbar",
 ]
 
 MIDDLEWARE = [
