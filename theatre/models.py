@@ -1,6 +1,9 @@
 from django.contrib.auth import get_user_model
 from django.db import models
 
+from theatre_service import settings
+
+
 class Actor(models.Model):
     first_name = models.CharField(max_length=100)
     last_name = models.CharField(max_length=100)
@@ -19,6 +22,8 @@ class Genre(models.Model):
 class Play(models.Model):
     title = models.CharField(max_length=100)
     description = models.TextField()
+    actors = models.ManyToManyField(Actor)
+    genres = models.ManyToManyField(Genre)
 
     def __str__(self):
         return f"{self.title} : {self.description}"
@@ -40,7 +45,9 @@ class TheatreHall(models.Model):
 
 class Reservation(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
-    user = get_user_model()
+    user = models.ForeignKey(settings.AUTH_USER_MODEL,
+                             on_delete=models.CASCADE,
+                             related_name="reservations")
 
 
 class Performance(models.Model):
