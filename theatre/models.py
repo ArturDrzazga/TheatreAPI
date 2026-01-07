@@ -36,11 +36,11 @@ class Play(models.Model):
 class TheatreHall(models.Model):
     name = models.CharField(max_length=100)
     rows = models.IntegerField()
-    seats_in_rows = models.IntegerField()
+    seats_in_row = models.IntegerField()
 
     @property
     def capacity(self):
-        return self.rows * self.seats_in_rows
+        return self.rows * self.seats_in_row
 
 
     def __str__(self):
