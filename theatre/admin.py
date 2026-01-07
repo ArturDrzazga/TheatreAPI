@@ -1,5 +1,4 @@
 from django.contrib import admin
-from django.contrib.auth.models import User
 
 from theatre.models import (TheatreHall,
                             Reservation,
@@ -9,10 +8,19 @@ from theatre.models import (TheatreHall,
                             Genre,
                             Actor)
 
+
+class TicketInline(admin.TabularInline):
+    model = Ticket
+    extra = 1
+
+
+class ReservationAdmin(admin.ModelAdmin):
+    inlines = [TicketInline]
+
 admin.site.register(Actor)
 admin.site.register(Genre)
 admin.site.register(Play)
 admin.site.register(TheatreHall)
-admin.site.register(Reservation)
+admin.site.register(Reservation, ReservationAdmin)
 admin.site.register(Performance)
 admin.site.register(Ticket)
