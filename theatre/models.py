@@ -1,7 +1,7 @@
 from django.contrib.auth import get_user_model
 from django.db import models
 
-from theatre_service import settings
+from django.conf import settings
 
 
 class Actor(models.Model):
@@ -56,7 +56,7 @@ class Performance(models.Model):
     show_time = models.DateTimeField()
 
     def __str__(self):
-        return f"{self.play.title} in {self.theatre_hall.id} at {self.show_time}"
+        return f"{self.play.title} in {self.theatre_hall.name} at {self.show_time}"
 
 
 class Ticket(models.Model):
@@ -64,6 +64,9 @@ class Ticket(models.Model):
     seat = models.IntegerField()
     performance = models.ForeignKey(Performance, on_delete=models.CASCADE, related_name="tickets")
     reservation = models.ForeignKey(Reservation, on_delete=models.CASCADE, related_name="tickets")
+
+    class Meta:
+        unique_together = ("performance", "row", "seat")
 
     def __str__(self):
         return (f"{self.performance.play.title} in "

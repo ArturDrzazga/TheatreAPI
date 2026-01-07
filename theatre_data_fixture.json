@@ -1,0 +1,114 @@
+[
+  {
+    "model": "theatre.actor",
+    "pk": 1,
+    "fields": { "first_name": "Benedict", "last_name": "Cumberbatch" }
+  },
+  {
+    "model": "theatre.actor",
+    "pk": 2,
+    "fields": { "first_name": "Olivia", "last_name": "Colman" }
+  },
+  {
+    "model": "theatre.genre",
+    "pk": 1,
+    "fields": { "name": "Drama" }
+  },
+  {
+    "model": "theatre.genre",
+    "pk": 2,
+    "fields": { "name": "Classic" }
+  },
+  {
+    "model": "theatre.play",
+    "pk": 1,
+    "fields": {
+      "title": "Hamlet",
+      "description": "A tragic story of the Prince of Denmark seeking revenge.",
+      "actors": [1],
+      "genres": [1, 2]
+    }
+  },
+  {
+    "model": "theatre.play",
+    "pk": 2,
+    "fields": {
+      "title": "Macbeth",
+      "description": "A Scottish general receives a prophecy from a trio of witches.",
+      "actors": [2],
+      "genres": [1]
+    }
+  },
+  {
+    "model": "theatre.theatrehall",
+    "pk": 1,
+    "fields": {
+      "name": "Grand Opera House",
+      "rows": 20,
+      "seats_in_rows": 30
+    }
+  },
+  {
+    "model": "theatre.theatrehall",
+    "pk": 2,
+    "fields": {
+      "name": "Small Chamber Room",
+      "rows": 5,
+      "seats_in_rows": 10
+    }
+  },
+  {
+    "model": "theatre.performance",
+    "pk": 1,
+    "fields": {
+      "play": 1,
+      "theatre_hall": 1,
+      "show_time": "2026-05-10T19:00:00Z"
+    }
+  },
+  {
+    "model": "theatre.performance",
+    "pk": 2,
+    "fields": {
+      "play": 2,
+      "theatre_hall": 2,
+      "show_time": "2026-05-12T20:00:00Z"
+    }
+  },
+  {
+    "model": "theatre.reservation",
+    "pk": 1,
+    "fields": {
+      "created_at": "2026-01-07T10:00:00Z",
+      "user": 1
+    }
+  },
+  {
+    "model": "theatre.reservation",
+    "pk": 2,
+    "fields": {
+      "created_at": "2026-01-07T11:30:00Z",
+      "user": 1
+    }
+  },
+  {
+    "model": "theatre.ticket",
+    "pk": 1,
+    "fields": {
+      "row": 10,
+      "seat": 5,
+      "performance": 1,
+      "reservation": 1
+    }
+  },
+  {
+    "model": "theatre.ticket",
+    "pk": 2,
+    "fields": {
+      "row": 2,
+      "seat": 1,
+      "performance": 2,
+      "reservation": 2
+    }
+  }
+]
