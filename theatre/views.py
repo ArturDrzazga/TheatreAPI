@@ -2,12 +2,16 @@ from django.shortcuts import render
 from rest_framework import viewsets
 
 from theatre.models import Actor, Genre
-from theatre.serializers import ActorSerializer, GenreSerializer
+from theatre.serializers import ActorSerializer, GenreSerializer, ActorRetrieveSerializer
 
 
 class ActorViewSet(viewsets.ModelViewSet):
     queryset = Actor.objects.all()
-    serializer_class = ActorSerializer
+
+    def get_serializer_class(self):
+        if self.action == 'retrieve':
+            return ActorRetrieveSerializer
+        return ActorSerializer
 
 
 class GenreViewSet(viewsets.ModelViewSet):
