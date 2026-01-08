@@ -108,6 +108,11 @@ class Ticket(models.Model):
                 name="unique_ticket_seat_performance"
             )
         ]
+        ordering = ["row", "seat"]
+
+    @property
+    def row_seat_display(self):
+        return f"Row: {self.row} Seat: {self.seat}"
 
     @staticmethod
     def validate_ticket(seat: int, row:int, theatre_hall: TheatreHall):

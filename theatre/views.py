@@ -1,3 +1,4 @@
+from django.db.models import Count, F
 from django.shortcuts import render
 from rest_framework import viewsets
 
@@ -75,9 +76,15 @@ class PerformanceViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         queryset = self.queryset
-
         play_filter = self.request.query_params.get("play", None)
         date_filter = self.request.query_params.get("date", None)
+
+        if self.action == "list":
+            queryset = Performance.objects.annotate(
+                available_tickets=(
+                    F("theatre_hall__rows") * F("theatre_hall__seats_in_row") - Count("tickets")
+                )
+            )
 
         if play_filter:
             play_ids = [int(play)
