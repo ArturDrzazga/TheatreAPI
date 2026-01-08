@@ -62,6 +62,15 @@ class TheatreHallRetrieveSerializer(TheatreHallSerializer):
 
 
 class PerformanceSerializer(serializers.ModelSerializer):
+    title = serializers.CharField(source="play.title", read_only=True)
+    theatre_hall_name = serializers.CharField(source="theatre_hall.name", read_only=True)
+
+    class Meta:
+        model = Performance
+        fields = ["id", "title", "theatre_hall_name", "show_time"]
+
+
+class PerformanceListSerializer(PerformanceSerializer):
     available_seats = serializers.IntegerField(source="available_tickets", read_only=True)
 
     class Meta:
@@ -70,8 +79,6 @@ class PerformanceSerializer(serializers.ModelSerializer):
 
 
 class PerformanceRetrieveSerializer(PerformanceSerializer):
-    title = serializers.CharField(source="play.title", read_only=True)
-    theatre_hall_name = serializers.CharField(source="theatre_hall.name", read_only=True)
     sold_tickets = serializers.SlugRelatedField(many=True,
                                                 read_only=True,
                                                 slug_field="row_seat_display",
@@ -84,6 +91,7 @@ class PerformanceRetrieveSerializer(PerformanceSerializer):
 
 
 class TicketSerializer(serializers.ModelSerializer):
+    performance = PerformanceSerializer(read_only=True)
 
     def validate(self, attrs):
         data = super(TicketSerializer, self).validate(attrs)
