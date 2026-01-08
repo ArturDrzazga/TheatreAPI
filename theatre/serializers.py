@@ -25,6 +25,11 @@ class GenreSerializer(serializers.ModelSerializer):
         model = Genre
         fields = ["id", "name"]
 
+    def validate_name(self, value):
+        if Genre.objects.filter(name__iexact=value).exists():
+            raise serializers.ValidationError("This genre is already exists")
+        return value
+
 
 class PlaySerializer(serializers.ModelSerializer):
 
@@ -73,6 +78,15 @@ class PerformanceRetrieveSerializer(PerformanceSerializer):
 
 
 class TicketSerializer(serializers.ModelSerializer):
+
+    def validate(self, attrs):
+        data = super(TicketSerializer, self).validate(attrs)
+        Ticket.validate_ticket(
+            attrs["seat"],
+            attrs["row"],
+            attrs["performance"].theatre_hall,
+        )
+        return data
 
     class Meta:
         model = Ticket
