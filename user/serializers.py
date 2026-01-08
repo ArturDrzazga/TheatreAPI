@@ -13,3 +13,11 @@ class UserSerializer(serializers.ModelSerializer):
             "password": {"write_only": True,
                          "min_length": 5}
         }
+
+    def update(self, instance, validated_data):
+        password = validated_data.pop("password", None)
+        user = super().update(instance, validated_data)
+        if password:
+            user.set_password(password)
+            user.save()
+        return user
