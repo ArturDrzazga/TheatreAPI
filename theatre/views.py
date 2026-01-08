@@ -29,6 +29,32 @@ class PlayViewSet(viewsets.ModelViewSet):
             return PlayRetrieveSerializer
         return PlaySerializer
 
+    def get_queryset(self):
+        queryset = self.queryset
+
+        title_filter = self.request.query_params.get('title', None)
+        genre_filter = self.request.query_params.get('genre', None)
+        actor_filter = self.request.query_params.get('actor', None)
+
+        if title_filter:
+            queryset = queryset.filter(title__icontains=title_filter)
+
+        if genre_filter:
+            genre_ids = [int(genre)
+                         for genre in genre_filter.split(',')
+                         if genre.strip().isdigit()
+                         ]
+            queryset = queryset.filter(genres__in=genre_ids)
+
+        if actor_filter:
+            actor_ids = [int(actor)
+                         for actor in actor_filter.split(',')
+                         if actor.strip().isdigit()
+                         ]
+            queryset = queryset.filter(actors__in=actor_ids)
+
+        return queryset.distinct()
+
 
 class TheatreHallViewSet(viewsets.ModelViewSet):
     queryset = TheatreHall.objects.all()
@@ -46,6 +72,25 @@ class PerformanceViewSet(viewsets.ModelViewSet):
         if self.action == 'retrieve':
             return PerformanceRetrieveSerializer
         return PerformanceSerializer
+
+    def get_queryset(self):
+        queryset = self.queryset
+
+        play_filter = self.request.query_params.get("play", None)
+        date_filter = self.request.query_params.get("date", None)
+
+        if play_filter:
+            play_ids = [int(play)
+                            for play in play_filter.split(",")
+                            if play.strip().isdigit()
+                            ]
+            queryset = queryset.filter(play__id__in=play_ids)
+
+        if date_filter:
+            queryset = queryset.filter(show_time__date=date_filter)
+
+        return queryset
+
 
 
 class ReservationViewSet(viewsets.ModelViewSet):
