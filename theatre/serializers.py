@@ -1,6 +1,8 @@
+from django.db import transaction
 from rest_framework import serializers
+from rest_framework.exceptions import ValidationError
 
-from theatre.models import Actor, Genre, Play, TheatreHall, Performance, Reservation
+from theatre.models import Actor, Genre, Play, TheatreHall, Performance, Reservation, Ticket
 
 
 class ActorSerializer(serializers.ModelSerializer):
@@ -70,9 +72,28 @@ class PerformanceRetrieveSerializer(PerformanceSerializer):
         fields = ["id", "title", "theatre_hall_name", "show_time"]
 
 
+class TicketSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Ticket
+        fields = ["id", "row", "seat", "performance"]
+
+
 class ReservationSerializer(serializers.ModelSerializer):
+    tickets = TicketSerializer(many=True, allow_empty=False)
 
     class Meta:
         model = Reservation
-        fields = ["id", "created_at", "user"]
+        fields = ["id", "created_at", "tickets"]
 
+    def create(self, validated_data):
+        tickets_data = validated_data.pop("tickets")
+        with transaction.atomic():
+            reservation = Reservation.objects.create(**validated_data)
+            for ticket_data in tickets_data:
+                try:
+                    Ticket.objects.create(reservation=reservation, **ticket_data)
+                except Exception as e:
+                    raise ValidationError(str(e))
+
+        return reservation
