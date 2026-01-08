@@ -79,6 +79,14 @@ class TicketSerializer(serializers.ModelSerializer):
         fields = ["id", "row", "seat", "performance"]
 
 
+class TicketRetrieveSerializer(serializers.ModelSerializer):
+    performance = PerformanceRetrieveSerializer(read_only=True)
+
+    class Meta:
+        model = Ticket
+        fields = ["id", "row", "seat", "performance"]
+
+
 class ReservationSerializer(serializers.ModelSerializer):
     tickets = TicketSerializer(many=True, allow_empty=False)
 
@@ -97,3 +105,26 @@ class ReservationSerializer(serializers.ModelSerializer):
                     raise ValidationError(str(e))
 
         return reservation
+
+    def update(self, instance, validated_data):
+        tickets_data = validated_data.pop("tickets", None)
+
+        with transaction.atomic():
+            instance = super().update(instance, validated_data)
+            if tickets_data is not None:
+                instance.tickets.all().delete()
+
+                for ticket_data in tickets_data:
+                    try:
+                        Ticket.objects.create(reservation=instance, **ticket_data)
+                    except Exception as e:
+                        raise ValidationError(str(e))
+        return instance
+
+
+class ReservationRetrieveSerializer(ReservationSerializer):
+    tickets = TicketRetrieveSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Reservation
+        fields =["id", "created_at", "tickets"]

@@ -4,7 +4,7 @@ from rest_framework import viewsets
 from theatre.models import Actor, Genre, Play, TheatreHall, Performance, Reservation
 from theatre.serializers import ActorSerializer, GenreSerializer, ActorRetrieveSerializer, PlaySerializer, \
     PlayRetrieveSerializer, TheatreHallRetrieveSerializer, TheatreHallSerializer, PerformanceSerializer, \
-    PerformanceRetrieveSerializer, ReservationSerializer
+    PerformanceRetrieveSerializer, ReservationSerializer, ReservationRetrieveSerializer
 
 
 class ActorViewSet(viewsets.ModelViewSet):
@@ -57,3 +57,8 @@ class ReservationViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
+
+    def get_serializer_class(self):
+        if self.action == 'retrieve':
+            return ReservationRetrieveSerializer
+        return ReservationSerializer
