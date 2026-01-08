@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     "theatre",
     "rest_framework",
     "debug_toolbar",
+    "rest_framework.authtoken",
 ]
 
 MIDDLEWARE = [
