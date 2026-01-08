@@ -45,7 +45,7 @@
     "fields": {
       "name": "Grand Opera House",
       "rows": 20,
-      "seats_in_rows": 30
+      "seats_in_row": 30
     }
   },
   {
@@ -54,7 +54,7 @@
     "fields": {
       "name": "Small Chamber Room",
       "rows": 5,
-      "seats_in_rows": 10
+      "seats_in_row": 10
     }
   },
   {
