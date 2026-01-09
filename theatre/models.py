@@ -40,6 +40,7 @@ class Play(models.Model):
     description = models.TextField()
     actors = models.ManyToManyField(Actor)
     genres = models.ManyToManyField(Genre)
+    poster = models.ImageField(null=True, blank=True, upload_to="uploads/")
 
     def __str__(self):
         return f"{self.title} : {self.description}"
