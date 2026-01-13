@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     "rest_framework",
     "debug_toolbar",
     "rest_framework.authtoken",
+    "drf_spectacular",
 ]
 
 MIDDLEWARE = [
@@ -137,5 +138,11 @@ REST_FRAMEWORK = {
         "rest_framework.authentication.TokenAuthentication",
         "rest_framework.authentication.SessionAuthentication",
     ],
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+}
 
+SPECTACULAR_SETTINGS = {
+    "TITLE": "Theatre API",
+    "DESCRIPTION": "API for booking tickets to theatre",
+    "VERSION": "1.0.0",
 }

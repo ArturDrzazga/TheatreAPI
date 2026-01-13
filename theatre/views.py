@@ -1,5 +1,7 @@
 from django.db.models import Count, F
 from django.shortcuts import render
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import extend_schema, OpenApiParameter
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.permissions import BasePermission, SAFE_METHODS, IsAuthenticated, IsAdminUser
@@ -88,6 +90,28 @@ class PlayViewSet(viewsets.ModelViewSet):
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                name="title",
+                type=OpenApiTypes.STR,
+                description="Filter by title of the play"
+            ),
+            OpenApiParameter(
+                name="genre",
+                type=OpenApiTypes.INT,
+                description="Filter by genre ID",
+            ),
+            OpenApiParameter(
+                name="actor",
+                type=OpenApiTypes.INT,
+                description="Filter by genre ID",
+            ),
+        ]
+    )
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
+
 
 class TheatreHallViewSet(viewsets.ModelViewSet):
     queryset = TheatreHall.objects.all()
@@ -132,6 +156,22 @@ class PerformanceViewSet(viewsets.ModelViewSet):
 
         return queryset
 
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                name="play",
+                type=OpenApiTypes.INT,
+                description="Filter by play ID",
+            ),
+            OpenApiParameter(
+                name="date",
+                type=OpenApiTypes.DATE,
+                description="Filter by date",
+            )
+        ]
+    )
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
 
 
 class ReservationViewSet(viewsets.ModelViewSet):
