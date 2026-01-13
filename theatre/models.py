@@ -16,7 +16,7 @@ class Actor(models.Model):
         return f"{self.first_name} {self.last_name}"
 
     @property
-    def full_name(self):
+    def full_name(self) -> str:
         return f"{self.first_name} {self.last_name}"
 
 
@@ -56,7 +56,7 @@ class TheatreHall(models.Model):
     )
 
     @property
-    def capacity(self):
+    def capacity(self) -> int:
         return self.rows * self.seats_in_row
 
 
@@ -112,7 +112,7 @@ class Ticket(models.Model):
         ordering = ["row", "seat"]
 
     @property
-    def row_seat_display(self):
+    def row_seat_display(self) -> str:
         return f"Row: {self.row} Seat: {self.seat}"
 
     @staticmethod
