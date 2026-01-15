@@ -130,6 +130,8 @@ class PerformanceViewSet(viewsets.ModelViewSet):
     def get_serializer_class(self):
         if self.action == 'retrieve':
             return PerformanceRetrieveSerializer
+        elif self.action == "list":
+            return PerformanceListSerializer
         return PerformanceSerializer
 
     def get_queryset(self):
@@ -139,7 +141,7 @@ class PerformanceViewSet(viewsets.ModelViewSet):
 
         if self.action == "list":
             queryset = Performance.objects.annotate(
-                available_tickets=(
+                available_seats=(
                     F("theatre_hall__rows") * F("theatre_hall__seats_in_row") - Count("tickets")
                 )
             )
