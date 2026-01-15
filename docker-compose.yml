@@ -1,0 +1,28 @@
+services:
+  db:
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_DB=theatre_db
+      - POSTGRES_USER=theatre_user
+      - POSTGRES_PASSWORD=theatre_password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+
+  app:
+    build: .
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
+    environment:
+      - DEBUG=True
+      - SECRET_KEY=test-secret-key-123
+      - DATABASE_URL=postgres://theatre_user:theatre_password@db:5432/theatre_db
+    depends_on:
+      - db
+    command: >
+      sh -c "python manage.py migrate &&
+             python manage.py runserver 0.0.0.0:8000"
+
+volumes:
+  postgres_data:
