@@ -4,7 +4,13 @@ from django.contrib.auth import get_user_model
 from django.utils import timezone
 from rest_framework.exceptions import ValidationError
 
-from theatre.models import TheatreHall, Play, Actor, Genre, Performance, Reservation, Ticket
+from theatre.models import (TheatreHall,
+                            Play,
+                            Actor,
+                            Genre,
+                            Performance,
+                            Reservation,
+                            Ticket)
 
 
 class ModelTests(TestCase):
@@ -46,7 +52,12 @@ class ModelTests(TestCase):
             show_time=timezone.now() + timezone.timedelta(days=1)
         )
         reservation = Reservation.objects.create(user=self.user)
-        ticket = Ticket(row=10, seat=11, performance=performance, reservation=reservation)
+        ticket = Ticket(
+            row=10,
+            seat=11,
+            performance=performance,
+            reservation=reservation
+        )
 
         with self.assertRaises(ValidationError):
             ticket.full_clean()

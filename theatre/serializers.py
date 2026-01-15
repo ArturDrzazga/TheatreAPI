@@ -2,7 +2,13 @@ from django.db import transaction
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
-from theatre.models import Actor, Genre, Play, TheatreHall, Performance, Reservation, Ticket
+from theatre.models import (Actor,
+                            Genre,
+                            Play,
+                            TheatreHall,
+                            Performance,
+                            Reservation,
+                            Ticket)
 
 
 class ActorSerializer(serializers.ModelSerializer):
@@ -46,8 +52,16 @@ class PlayPosterSerializer(PlaySerializer):
 
 
 class PlayRetrieveSerializer(PlaySerializer):
-    actors = serializers.SlugRelatedField(many=True, read_only=True, slug_field="full_name")
-    genres = serializers.SlugRelatedField(many=True, read_only=True, slug_field="name")
+    actors = serializers.SlugRelatedField(
+        many=True,
+        read_only=True,
+        slug_field="full_name"
+    )
+    genres = serializers.SlugRelatedField(
+        many=True,
+        read_only=True,
+        slug_field="name"
+    )
 
     class Meta:
         model = Play
@@ -70,7 +84,10 @@ class TheatreHallRetrieveSerializer(TheatreHallSerializer):
 
 class PerformanceSerializer(serializers.ModelSerializer):
     title = serializers.CharField(source="play.title", read_only=True)
-    theatre_hall_name = serializers.CharField(source="theatre_hall.name", read_only=True)
+    theatre_hall_name = serializers.CharField(
+        source="theatre_hall.name",
+        read_only=True
+    )
 
     class Meta:
         model = Performance
@@ -82,7 +99,8 @@ class PerformanceListSerializer(PerformanceSerializer):
 
     class Meta:
         model = Performance
-        fields = ["id", "title", "theatre_hall_name", "show_time", "available_seats"]
+        fields = ["id", "title", "theatre_hall_name",
+                  "show_time", "available_seats"]
 
 
 class PerformanceRetrieveSerializer(PerformanceSerializer):
@@ -94,7 +112,8 @@ class PerformanceRetrieveSerializer(PerformanceSerializer):
 
     class Meta:
         model = Performance
-        fields = ["id", "title", "theatre_hall_name", "show_time", "sold_tickets"]
+        fields = ["id", "title", "theatre_hall_name",
+                  "show_time", "sold_tickets"]
 
 
 class TicketSerializer(serializers.ModelSerializer):
@@ -136,7 +155,10 @@ class ReservationSerializer(serializers.ModelSerializer):
             reservation = Reservation.objects.create(**validated_data)
             for ticket_data in tickets_data:
                 try:
-                    Ticket.objects.create(reservation=reservation, **ticket_data)
+                    Ticket.objects.create(
+                        reservation=reservation,
+                        **ticket_data
+                    )
                 except Exception as e:
                     raise ValidationError(str(e))
 
@@ -146,13 +168,19 @@ class ReservationSerializer(serializers.ModelSerializer):
         tickets_data = validated_data.pop("tickets", None)
 
         with transaction.atomic():
-            instance = super().update(instance, validated_data)
+            instance = super().update(
+                instance,
+                validated_data
+            )
             if tickets_data is not None:
                 instance.tickets.all().delete()
 
                 for ticket_data in tickets_data:
                     try:
-                        Ticket.objects.create(reservation=instance, **ticket_data)
+                        Ticket.objects.create(
+                            reservation = instance,
+                            **ticket_data
+                        )
                     except Exception as e:
                         raise ValidationError(str(e))
         return instance

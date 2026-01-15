@@ -4,13 +4,18 @@ from django.core.exceptions import ValidationError as DjangoValidationError
 from django.test import TestCase
 from theatre.models import Performance, Play, TheatreHall, Reservation, Ticket
 
+
 class TicketValidationTests(TestCase):
     def setUp(self):
         self.user = get_user_model().objects.create_user(
             email="user@t.com",
             password="userpassword",
         )
-        self.hall = TheatreHall.objects.create(name="Small Room", rows=3, seats_in_row=3)
+        self.hall = TheatreHall.objects.create(
+            name="Small Room",
+            rows=3,
+            seats_in_row=3
+        )
         self.play = Play.objects.create(title="Test Play", description="Desc")
         self.performance = Performance.objects.create(
             play=self.play,

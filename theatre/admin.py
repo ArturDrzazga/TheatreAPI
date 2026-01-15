@@ -17,6 +17,7 @@ class TicketInline(admin.TabularInline):
 class ReservationAdmin(admin.ModelAdmin):
     inlines = [TicketInline]
 
+
 admin.site.register(Actor)
 admin.site.register(Genre)
 admin.site.register(Play)

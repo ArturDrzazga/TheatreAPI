@@ -1,18 +1,31 @@
 from django.db.models import Count, F
-from django.shortcuts import render
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import extend_schema, OpenApiParameter
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
-from rest_framework.permissions import BasePermission, SAFE_METHODS, IsAuthenticated, IsAdminUser
+from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.response import Response
 
-from theatre.models import Actor, Genre, Play, TheatreHall, Performance, Reservation
+from theatre.models import (Actor,
+                            Genre,
+                            Play,
+                            TheatreHall,
+                            Performance,
+                            Reservation)
 from theatre.permissions import IsAdminOrReadOnly
-from theatre.serializers import ActorSerializer, GenreSerializer, ActorRetrieveSerializer, PlaySerializer, \
-    PlayRetrieveSerializer, TheatreHallRetrieveSerializer, TheatreHallSerializer, PerformanceSerializer, \
-    PerformanceRetrieveSerializer, ReservationSerializer, ReservationRetrieveSerializer, PerformanceListSerializer, \
-    PlayPosterSerializer
+from theatre.serializers import (ActorSerializer,
+                                 GenreSerializer,
+                                 ActorRetrieveSerializer,
+                                 PlaySerializer,
+                                 PlayRetrieveSerializer,
+                                 TheatreHallRetrieveSerializer,
+                                 TheatreHallSerializer,
+                                 PerformanceSerializer,
+                                 PerformanceRetrieveSerializer,
+                                 ReservationSerializer,
+                                 ReservationRetrieveSerializer,
+                                 PerformanceListSerializer,
+                                 PlayPosterSerializer)
 
 
 class ActorViewSet(viewsets.ModelViewSet):
@@ -20,7 +33,7 @@ class ActorViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAdminOrReadOnly]
 
     def get_serializer_class(self):
-        if self.action == 'retrieve':
+        if self.action == "retrieve":
             return ActorRetrieveSerializer
         return ActorSerializer
 
@@ -36,7 +49,7 @@ class PlayViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAdminOrReadOnly]
 
     def get_serializer_class(self):
-        if self.action == 'retrieve':
+        if self.action == "retrieve":
             return PlayRetrieveSerializer
         elif self.action == "upload_poster":
             return PlayPosterSerializer
@@ -45,23 +58,23 @@ class PlayViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         queryset = self.queryset.prefetch_related("genres", "actors")
 
-        title_filter = self.request.query_params.get('title', None)
-        genre_filter = self.request.query_params.get('genre', None)
-        actor_filter = self.request.query_params.get('actor', None)
+        title_filter = self.request.query_params.get("title", None)
+        genre_filter = self.request.query_params.get("genre", None)
+        actor_filter = self.request.query_params.get("actor", None)
 
         if title_filter:
             queryset = queryset.filter(title__icontains=title_filter)
 
         if genre_filter:
             genre_ids = [int(genre)
-                         for genre in genre_filter.split(',')
+                         for genre in genre_filter.split(",")
                          if genre.strip().isdigit()
                          ]
             queryset = queryset.filter(genres__in=genre_ids)
 
         if actor_filter:
             actor_ids = [int(actor)
-                         for actor in actor_filter.split(',')
+                         for actor in actor_filter.split(",")
                          if actor.strip().isdigit()
                          ]
             queryset = queryset.filter(actors__in=actor_ids)
@@ -110,7 +123,7 @@ class TheatreHallViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAdminOrReadOnly]
 
     def get_serializer_class(self):
-        if self.action == 'retrieve':
+        if self.action == "retrieve":
             return TheatreHallRetrieveSerializer
         return TheatreHallSerializer
 
@@ -120,7 +133,7 @@ class PerformanceViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAdminOrReadOnly]
 
     def get_serializer_class(self):
-        if self.action == 'retrieve':
+        if self.action == "retrieve":
             return PerformanceRetrieveSerializer
         elif self.action == "list":
             return PerformanceListSerializer
@@ -134,7 +147,8 @@ class PerformanceViewSet(viewsets.ModelViewSet):
         if self.action == "list":
             queryset = Performance.objects.annotate(
                 available_seats=(
-                    F("theatre_hall__rows") * F("theatre_hall__seats_in_row") - Count("tickets")
+                    F("theatre_hall__rows") * F("theatre_hall__seats_in_row")
+                    - Count("tickets")
                 )
             )
 
@@ -184,6 +198,6 @@ class ReservationViewSet(viewsets.ModelViewSet):
         serializer.save(user=self.request.user)
 
     def get_serializer_class(self):
-        if self.action == 'retrieve':
+        if self.action == "retrieve":
             return ReservationRetrieveSerializer
         return ReservationSerializer

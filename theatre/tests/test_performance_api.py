@@ -50,7 +50,10 @@ class PerformanceApiTests(APITestCase):
         self.assertEqual(res.data[0]["available_seats"], 24)
 
     def test_filter_performances_by_play(self):
-        other_play = Play.objects.create(title="Other Movie", description="Desc")
+        other_play = Play.objects.create(
+            title="Other Movie",
+            description="Desc"
+        )
         Performance.objects.create(
             play=other_play,
             theatre_hall=self.hall,

@@ -1,8 +1,12 @@
 from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 
-from theatre.views import GenreViewSet, ActorViewSet, PlayViewSet, TheatreHallViewSet, PerformanceViewSet, \
-    ReservationViewSet
+from theatre.views import (GenreViewSet,
+                           ActorViewSet,
+                           PlayViewSet,
+                           TheatreHallViewSet,
+                           PerformanceViewSet,
+                           ReservationViewSet)
 
 app_name = "theatre"
 

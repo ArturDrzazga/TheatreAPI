@@ -9,7 +9,6 @@ from theatre.models import (
     Performance,
     Play,
     TheatreHall,
-    Ticket
 )
 
 
@@ -69,7 +68,9 @@ class ReservationApiTests(APITestCase):
 
     def test_create_reservation_unauthorized(self):
         payload = {
-            "tickets": [{"row": 1, "seat": 1, "performance": self.performance.id}]
+            "tickets": [
+                {"row": 1, "seat": 1, "performance": self.performance.id}
+            ]
         }
         res = self.client.post(self.url, payload, format="json")
         self.assertEqual(res.status_code, status.HTTP_401_UNAUTHORIZED)
