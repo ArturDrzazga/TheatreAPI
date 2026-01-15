@@ -98,15 +98,16 @@ class PerformanceRetrieveSerializer(PerformanceSerializer):
 
 
 class TicketSerializer(serializers.ModelSerializer):
-    performance = PerformanceSerializer(read_only=True)
 
     def validate(self, attrs):
         data = super(TicketSerializer, self).validate(attrs)
-        Ticket.validate_ticket(
-            attrs["seat"],
-            attrs["row"],
-            attrs["performance"].theatre_hall,
-        )
+        performance = attrs.get("performance")
+        if performance:
+            Ticket.validate_ticket(
+                attrs["seat"],
+                attrs["row"],
+                attrs["performance"].theatre_hall,
+            )
         return data
 
     class Meta:
