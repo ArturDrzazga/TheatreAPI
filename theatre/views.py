@@ -8,19 +8,11 @@ from rest_framework.permissions import BasePermission, SAFE_METHODS, IsAuthentic
 from rest_framework.response import Response
 
 from theatre.models import Actor, Genre, Play, TheatreHall, Performance, Reservation
+from theatre.permissions import IsAdminOrReadOnly
 from theatre.serializers import ActorSerializer, GenreSerializer, ActorRetrieveSerializer, PlaySerializer, \
     PlayRetrieveSerializer, TheatreHallRetrieveSerializer, TheatreHallSerializer, PerformanceSerializer, \
     PerformanceRetrieveSerializer, ReservationSerializer, ReservationRetrieveSerializer, PerformanceListSerializer, \
     PlayPosterSerializer
-
-
-class IsAdminOrReadOnly(BasePermission):
-    def has_permission(self, request, view):
-        if request.method in SAFE_METHODS:
-            return True
-        if request.user and request.user.is_authenticated and request.user.is_staff:
-            return True
-        return False
 
 
 class ActorViewSet(viewsets.ModelViewSet):
@@ -51,7 +43,7 @@ class PlayViewSet(viewsets.ModelViewSet):
         return PlaySerializer
 
     def get_queryset(self):
-        queryset = self.queryset
+        queryset = self.queryset.prefetch_related("genres", "actors")
 
         title_filter = self.request.query_params.get('title', None)
         genre_filter = self.request.query_params.get('genre', None)
@@ -135,7 +127,7 @@ class PerformanceViewSet(viewsets.ModelViewSet):
         return PerformanceSerializer
 
     def get_queryset(self):
-        queryset = self.queryset
+        queryset = self.queryset.select_related("play", "theatre_hall")
         play_filter = self.request.query_params.get("play", None)
         date_filter = self.request.query_params.get("date", None)
 
@@ -182,7 +174,11 @@ class ReservationViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        return Reservation.objects.filter(user=self.request.user)
+        return (Reservation.objects.filter(user=self.request.user).
+                prefetch_related(
+            "tickets__performance__play",
+            "tickets__performance__theatre_hall")
+        )
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
