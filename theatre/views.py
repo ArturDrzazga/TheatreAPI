@@ -1,0 +1,203 @@
+from django.db.models import Count, F
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import extend_schema, OpenApiParameter
+from rest_framework import viewsets, status
+from rest_framework.decorators import action
+from rest_framework.permissions import IsAuthenticated, IsAdminUser
+from rest_framework.response import Response
+
+from theatre.models import (Actor,
+                            Genre,
+                            Play,
+                            TheatreHall,
+                            Performance,
+                            Reservation)
+from theatre.permissions import IsAdminOrReadOnly
+from theatre.serializers import (ActorSerializer,
+                                 GenreSerializer,
+                                 ActorRetrieveSerializer,
+                                 PlaySerializer,
+                                 PlayRetrieveSerializer,
+                                 TheatreHallRetrieveSerializer,
+                                 TheatreHallSerializer,
+                                 PerformanceSerializer,
+                                 PerformanceRetrieveSerializer,
+                                 ReservationSerializer,
+                                 ReservationRetrieveSerializer,
+                                 PerformanceListSerializer,
+                                 PlayPosterSerializer)
+
+
+class ActorViewSet(viewsets.ModelViewSet):
+    queryset = Actor.objects.all()
+    permission_classes = [IsAdminOrReadOnly]
+
+    def get_serializer_class(self):
+        if self.action == "retrieve":
+            return ActorRetrieveSerializer
+        return ActorSerializer
+
+
+class GenreViewSet(viewsets.ModelViewSet):
+    queryset = Genre.objects.all()
+    serializer_class = GenreSerializer
+    permission_classes = [IsAdminOrReadOnly]
+
+
+class PlayViewSet(viewsets.ModelViewSet):
+    queryset = Play.objects.all()
+    permission_classes = [IsAdminOrReadOnly]
+
+    def get_serializer_class(self):
+        if self.action == "retrieve":
+            return PlayRetrieveSerializer
+        elif self.action == "upload_poster":
+            return PlayPosterSerializer
+        return PlaySerializer
+
+    def get_queryset(self):
+        queryset = self.queryset.prefetch_related("genres", "actors")
+
+        title_filter = self.request.query_params.get("title", None)
+        genre_filter = self.request.query_params.get("genre", None)
+        actor_filter = self.request.query_params.get("actor", None)
+
+        if title_filter:
+            queryset = queryset.filter(title__icontains=title_filter)
+
+        if genre_filter:
+            genre_ids = [int(genre)
+                         for genre in genre_filter.split(",")
+                         if genre.strip().isdigit()
+                         ]
+            queryset = queryset.filter(genres__in=genre_ids)
+
+        if actor_filter:
+            actor_ids = [int(actor)
+                         for actor in actor_filter.split(",")
+                         if actor.strip().isdigit()
+                         ]
+            queryset = queryset.filter(actors__in=actor_ids)
+
+        return queryset.distinct()
+
+    @action(methods=["POST"],
+            detail=True,
+            url_path="upload-poster",
+            url_name="upload-poster",
+            permission_classes=[IsAdminUser])
+    def upload_poster(self, request, pk=None):
+        play =  self.get_object()
+        serializer = self.get_serializer(play, data=request.data, partial=True)
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                name="title",
+                type=OpenApiTypes.STR,
+                description="Filter by title of the play"
+            ),
+            OpenApiParameter(
+                name="genre",
+                type=OpenApiTypes.INT,
+                description="Filter by genre ID",
+            ),
+            OpenApiParameter(
+                name="actor",
+                type=OpenApiTypes.INT,
+                description="Filter by genre ID",
+            ),
+        ]
+    )
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
+
+
+class TheatreHallViewSet(viewsets.ModelViewSet):
+    queryset = TheatreHall.objects.all()
+    permission_classes = [IsAdminOrReadOnly]
+
+    def get_serializer_class(self):
+        if self.action == "retrieve":
+            return TheatreHallRetrieveSerializer
+        return TheatreHallSerializer
+
+
+class PerformanceViewSet(viewsets.ModelViewSet):
+    queryset = Performance.objects.all()
+    permission_classes = [IsAdminOrReadOnly]
+
+    def get_serializer_class(self):
+        if self.action == "retrieve":
+            return PerformanceRetrieveSerializer
+        elif self.action == "list":
+            return PerformanceListSerializer
+        return PerformanceSerializer
+
+    def get_queryset(self):
+        queryset = self.queryset.select_related("play", "theatre_hall")
+        play_filter = self.request.query_params.get("play", None)
+        date_filter = self.request.query_params.get("date", None)
+
+        if self.action == "list":
+            queryset = Performance.objects.annotate(
+                available_seats=(
+                    F("theatre_hall__rows") * F("theatre_hall__seats_in_row")
+                    - Count("tickets")
+                )
+            )
+
+        if play_filter:
+            play_ids = [int(play)
+                            for play in play_filter.split(",")
+                            if play.strip().isdigit()
+                            ]
+            queryset = queryset.filter(play__id__in=play_ids)
+
+        if date_filter:
+            queryset = queryset.filter(show_time__date=date_filter)
+
+        return queryset
+
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                name="play",
+                type=OpenApiTypes.INT,
+                description="Filter by play ID",
+            ),
+            OpenApiParameter(
+                name="date",
+                type=OpenApiTypes.DATE,
+                description="Filter by date",
+            )
+        ]
+    )
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
+
+
+class ReservationViewSet(viewsets.ModelViewSet):
+    queryset = Reservation.objects.all()
+    serializer_class = ReservationSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return (Reservation.objects.filter(user=self.request.user).
+                prefetch_related(
+            "tickets__performance__play",
+            "tickets__performance__theatre_hall")
+        )
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+    def get_serializer_class(self):
+        if self.action == "retrieve":
+            return ReservationRetrieveSerializer
+        return ReservationSerializer
